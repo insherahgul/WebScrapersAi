@@ -1,0 +1,9 @@
+// lib/api.ts
+import axios from "axios";
+
+export const api = axios.create({
+  baseURL: "http://localhost:5000", // your backend URL
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+});

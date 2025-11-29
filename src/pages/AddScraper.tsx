@@ -8,30 +8,56 @@ import { useToast } from "@/hooks/use-toast";
 const AddScraper = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [url, setUrl] = useState("");
-  const [isScrapingRunning, setIsScrapingRunning] = useState(false);
 
-  const handleScrape = async () => {
-    if (!url) {
+  const [url, setUrl] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleProcess = async () => {
+    if (!url.trim()) {
       toast({
-        title: "URL Required",
-        description: "Please enter a valid URL to scrape",
+        title: "Input Required",
+        description: "Please enter a URL",
         variant: "destructive",
       });
       return;
     }
 
-    setIsScrapingRunning(true);
-    
-    // Simulate scraping process
-    setTimeout(() => {
-      setIsScrapingRunning(false);
-      toast({
-        title: "Success!",
-        description: "Website scraped successfully",
+    setIsProcessing(true);
+
+    try {
+      // --- Send URL to backend ---
+      const response = await fetch("http://127.0.0.1:8000/api/scrap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
       });
-      navigate("/dashboard");
-    }, 2000);
+
+      if (!response.ok) throw new Error("Failed to scrape website");
+
+      // --- Get JSON file as blob ---
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      // --- Trigger download ---
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = "scraped_data.json";
+      a.click();
+
+      toast({
+        title: "Success",
+        description: "Website scraped successfully! JSON downloaded.",
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "Something went wrong while scraping",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -59,11 +85,12 @@ const AddScraper = () => {
               </div>
               <h2 className="text-3xl font-bold mb-3">Start Scraping</h2>
               <p className="text-muted-foreground">
-                Enter the URL of the website you want to scrape with AI-powered automation
+                Enter a website URL to start scraping automatically.
               </p>
             </div>
 
             <div className="space-y-6">
+              {/* URL Input */}
               <div className="space-y-2">
                 <label htmlFor="url" className="text-sm font-medium">
                   Website URL
@@ -78,51 +105,27 @@ const AddScraper = () => {
                 />
               </div>
 
+              {/* Start Button */}
               <Button
-                onClick={handleScrape}
-                disabled={isScrapingRunning}
+                onClick={handleProcess}
+                disabled={isProcessing}
                 className="w-full h-14 text-lg gradient-primary text-white hover:opacity-90 transition-all group relative overflow-hidden"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  {isScrapingRunning ? (
+                  {isProcessing ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Scraping...
+                      Processing...
                     </>
                   ) : (
                     <>
                       <Play className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                      Start Scraping
+                      Start
                     </>
                   )}
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               </Button>
-            </div>
-
-            <div className="mt-8 p-6 rounded-xl bg-muted/30 border border-border/30">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Features
-              </h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                  AI-powered data extraction
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                  Automated scraping schedules
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                  Smart data parsing and structuring
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                  Export in multiple formats
-                </li>
-              </ul>
             </div>
           </div>
         </div>

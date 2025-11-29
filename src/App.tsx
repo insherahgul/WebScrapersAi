@@ -10,6 +10,9 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import AddScraper from "./pages/AddScraper";
 import NotFound from "./pages/NotFound";
+import CustomizeScraper from "./pages/CustomizeScraper";
+
+
 
 const queryClient = new QueryClient();
 
@@ -26,6 +29,9 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/add-scraper" element={<AddScraper />} />
+            <Route path="/customize-website" element={<CustomizeScraper />} />
+
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
